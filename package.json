@@ -1,0 +1,15 @@
+{
+  "name": "test_server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bgw-bemch.js",
+  "dependencies": {
+    "http-proxy": "^1.16.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
