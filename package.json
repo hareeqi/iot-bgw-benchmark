@@ -4,7 +4,8 @@
   "description": "",
   "main": "bgw-bemch.js",
   "dependencies": {
-    "http-proxy": "^1.16.2"
+    "http-proxy": "^1.16.2",
+    "mqtt-packet": "^5.4.0"
   },
   "devDependencies": {},
   "scripts": {
