@@ -19,7 +19,7 @@ const httpCommand = (con, port)=> {
 const mqttCommand = (con, port, action)=> {
   const is_tls = !(port==1883 || port == 5051)
   const protocol = is_tls?'ssl':'tcp';
-  return `./tools/mqtt-bench -broker=${protocol}://${targetHost}:${port} -action=${action} ${is_tls?cert:""} -clients=10 -count=${con} -broker-username=${bgw_key}`
+  return `./tools/mqtt-bench -broker=${protocol}://${targetHost}:${port} -qos=1 -action=${action} ${is_tls?cert:""} -clients=10 -count=${con} -broker-username=${bgw_key} -intervaltime=1`
 }
 
 let report = ""
@@ -91,6 +91,10 @@ const mqtt_pub = async() => {
 }
 
 const mqtt_sub = async() => {
+  const bomb = require('./mqtt-bombing')
+  bomb.start({host:targetHost,port:1883})
+  await sleep()
+  await sleep()
   await scenario('mqtt','BGW TLS',8883,'sub')
   await sleep()
   await scenario('mqtt','BGW w/o EI TLS',5098,'sub')
@@ -100,6 +104,14 @@ const mqtt_sub = async() => {
   await scenario('mqtt','Direct TLS',8884,'sub')
   await sleep()
   await scenario('mqtt','Direct',1883,'sub')
+  bomb.stop()
+}
+const mqtt_bombing = async() => {
+  const bomb = require('./mqtt-bombing')
+  bomb.start({host:targetHost,port:1883})
+  await sleep()
+  await sleep()
+  bomb.stop()
 }
 
 switch (process.argv[2]) {
@@ -111,6 +123,9 @@ switch (process.argv[2]) {
         break;
     case "mqtt-sub":
         run_test('MQTT SUB Test',mqtt_sub);
+        break;
+    case "mqtt-bombing":
+        mqtt_bombing();
         break;
     default:
         console.log('\n\n You must pass an argument "http" or "mqtt-pub" or "mqtt-sub" \n\n');
