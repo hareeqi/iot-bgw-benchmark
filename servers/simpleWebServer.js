@@ -22,8 +22,8 @@ if (cluster.isMaster) {
 
 
   const options = {
-    key: fs.readFileSync('../certs/key.pem'),
-    cert: fs.readFileSync('../certs/srv.pem')
+    key: fs.readFileSync('./certs/key.pem'),
+    cert: fs.readFileSync('./certs/srv.pem')
   };
 
   // Secure HTTPS Server

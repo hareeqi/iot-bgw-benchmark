@@ -9,8 +9,8 @@ const numCPUs = require('os').cpus().length;
 
 
 const options = {
-  key: fs.readFileSync('../certs/key.pem'),
-  cert: fs.readFileSync('../certs/srv.pem')
+  key: fs.readFileSync('./certs/key.pem'),
+  cert: fs.readFileSync('./certs/srv.pem')
 };
 
 
