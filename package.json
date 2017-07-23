@@ -5,7 +5,7 @@
   "main": "bgw-bemch.js",
   "dependencies": {
     "http-proxy": "^1.16.2",
-    "mqtt": "^2.9.2"
+    "mqtt-bench": "github:hareeqi/mqtt-bench"
   },
   "devDependencies": {},
   "scripts": {

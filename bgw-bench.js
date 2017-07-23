@@ -8,10 +8,10 @@ const lowCons = [10,200,400,600,800,1000]; // number of concrurent connections
 const highCons = [600,800,1000,1200,1400,1600];
 const targetHost = "testbgw.bgw.hareeqi.com";
 const bgw_key = "admin.test.7UQ4zTKbjv85YKxJwX6Tky1tIl7cpvGHPdsqBTwGZMz"
-const cert = "-tls=server:./certs/srv.pem"
+const cert = "./certs/srv.pem"
 const mqttQoS = 0;
-const mqttCount = 200; // number of messages for each connecting client
-const mqttInterval = 1 // for each client number of milisecons between each message
+const mqttCount = 100; // number of messages for each connecting client
+const mqttInterval = 0 // for each client number of milisecons between each message
 const httpTotalRequests = 10000;
 
 //End of configurable options
@@ -27,15 +27,15 @@ const httpCommand = (con, port)=> {
 }
 const mqttCommand = (con, port, action)=> {
   const is_tls = !(port==1883 || port == 5051)
-  const protocol = is_tls?'ssl':'tcp';
-  return `./tools/mqtt-bench -broker=${protocol}://${targetHost}:${port} -qos=${mqttQoS} -action=${action} ${is_tls?cert:""} -clients=${con} -count=${mqttCount} -broker-username=${bgw_key} -intervaltime=${mqttInterval}`
+  const protocol = is_tls?'mqtts':'mqtt';
+  return `node ./node_modules/mqtt-bench --broker=${protocol}://${targetHost}:${port} --qos=${mqttQoS} --ca=${cert} --clients=${con} --count=${mqttCount} --username=${bgw_key} --sleep=${mqttInterval}`
 }
 const command = isHTTP? httpCommand : mqttCommand
 
 let report = ""
 let summery= ""
 
-const  parse = (result) => Number(((""+result).split(isHTTP?:'Requests/sec:''throughput=')[1]).split(isHTTP?'\n':'messages/sec')[0])
+const  parse = (result) =>Number(((""+result).split(isHTTP?'Requests/sec:':'(messages/second): ')[1]).split('\n')[0])
 const avrage = (arr)=> Math.round(arr.reduce((a,b)=>a+b)/arr.length)
 const arr2csv = (arr)=> report += arr.map((ob,i)=>cons[i]+'con,'+ob.join(',')).join('\n')
 
@@ -50,6 +50,7 @@ const scenario = async (name,port,args)=> {
   for (let j = 0 ;j<cons.length; j++){
     csv[j] = []
     const commandString = command(cons[j],port,args)
+
     for (let i = 0 ; i<totalRounds;i++){
       const result = parse(execSync(commandString))
       console.log(`Con ${cons[j]} - Round: ${i+1} - Result: ${result}`);
@@ -70,13 +71,13 @@ const scenario = async (name,port,args)=> {
 
 
 
-const seprator = '\n\n----------------------------------------------------------\n\n'
+const seprator = '\n\n--------------------------- Summery -------------------------------\n\n'
 const run_test = async (test_name,test_function)=>{
   console.log(`\n\n============\n${test_name}\n============\n\n`)
   console.log(`Starting bench marking with ${sleepTime} seconds sleep time between rounds and total of ${totalRounds} rounds`);
   console.log(`With the follwoing concurnet connections ${cons.join(',')}\n\n`);
   await test_function()
-  summery = seprator+"Scenario\\Cons" +cons.join('cons,')+"cons"+summery+seprator
+  summery = seprator+"Scenario\\Cons," +cons.join('cons,')+"cons\n"+summery+seprator
   report = `BGW Report generated at ${Date()} \n\n` + summery +report
 
   console.log("\n\n\n"+report);
@@ -94,7 +95,7 @@ const http_test = async() => {
   await sleep()
   await scenario('Direct No-TLS',9080)
 }
-const mqtt_pub = async() => {
+const mqtt_test = async() => {
   await scenario('BGW TLS',8883,'pub')
   await sleep()
   await scenario('BGW w/o EI TLS',5098,'pub')
@@ -106,45 +107,17 @@ const mqtt_pub = async() => {
   await scenario('Direct',1883,'pub')
 }
 
-const mqtt_sub = async() => {
-  const bomb = require('./mqtt-bombing')
-  bomb.start({host:targetHost,port:1883})
-  await sleep()
-  await sleep()
-  await scenario('BGW TLS',8883,'sub')
-  await sleep()
-  await scenario('BGW w/o EI TLS',5098,'sub')
-  await sleep()
-  await scenario('BGW w/o EI',5051,'sub')
-  await sleep()
-  await scenario('Direct TLS',8884,'sub')
-  await sleep()
-  await scenario('Direct',1883,'sub')
-  bomb.stop()
-}
-const mqtt_bombing = async() => {
-  const bomb = require('./tools/mqtt-bombing')
-  bomb.start({host:targetHost,port:1883})
-  await sleep()
-  await sleep()
-  bomb.stop()
-}
+
 
 switch (process.argv[2]) {
     case "http":
         run_test('HTTP Proxy Test',http_test);
         break;
-    case "mqtt-pub":
-        run_test('MQTT PUB Test',mqtt_pub);
-        break;
-    case "mqtt-sub":
-        run_test('MQTT SUB Test',mqtt_sub);
-        break;
-    case "mqtt-bombing":
-        mqtt_bombing();
+    case "mqtt":
+        run_test('MQTT Proxy Test',mqtt_test);
         break;
     default:
-        console.log('\n\n You must pass an argument "http" or "mqtt-pub" or "mqtt-sub" ');
+        console.log('\n\n You must pass an argument "http" or "mqtt" ');
         console.log('\n\n You can also use the low and high flag to set number of concurrent connection')
-        console.log('\n\n  Example bgw-bench mqtt-pub high')
+        console.log('\n\n  Example bgw-bench mqtt high')
 }

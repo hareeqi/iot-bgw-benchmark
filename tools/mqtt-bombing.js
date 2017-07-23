@@ -5,11 +5,15 @@ var mqtt = require('mqtt')
 
 let client = null
 
+const sleep = ()=> new Promise(resolve => setTimeout(resolve, 5))
 
 module.exports.start = (options)=> {
-  const c = mqtt.connect(Object.assign({ clean: true, keepalive: 0 },options))
+ const c = mqtt.connect(Object.assign({ clean: true, keepalive: 0 },options))
 
-  const publish = ()=> c.connected && c.publish(options.topic||'/mqtt-bench/benchmark', options.payload||'payload', publish)
+  const publish = async ()=> {
+	await sleep()
+	c.connected && c.publish(options.topic||'/mqtt-bench/benchmark', options.payload||'payload', publish)
+  }
 
   c.on('connect', publish)
   c.on('error',  ()=> {console.log('Boomning error - reconnect!');c.stream.end();})
