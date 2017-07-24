@@ -4,8 +4,9 @@ const { execSync } = require('child_process');
 ///Configurable options
 const totalRounds = 3;
 const sleepTime = 5;
-const lowCons = [10,200,400,600,800,1000]; // number of concrurent connections
-const highCons = [600,800,1000,1200,1400,1600];
+// number of concrurent connections
+const httpCons ={low: [10,200,400,600,800,1000],high:[600,800,1000,1200,1400,1600]}
+const mqttCons ={low: [50,60,70,80,90,100],high:[500,600,700,800,900,1000]} ;
 const targetHost = "testbgw.bgw.hareeqi.com";
 const bgw_key = "admin.test.7UQ4zTKbjv85YKxJwX6Tky1tIl7cpvGHPdsqBTwGZMz"
 const cert = "./certs/srv.pem"
@@ -18,7 +19,8 @@ const httpTotalRequests = 10000;
 
 
 const isHTTP = process.argv[2] == "http"
-const cons = process.argv[3] == "high" ?highCons:lowCons
+let cons = isHTTP ?httpCons:mqttCons
+cons = process.argv[3] == "high" ?cons.high:cons.low
 const roundsString = (new Array(totalRounds)).fill(0).map((n,i)=>"Round "+(i+1)).join(',')
 const httpCommand = (con, port)=> {
   const PORT = port == 443 ?"":`:${port}`;
@@ -96,15 +98,15 @@ const http_test = async() => {
   await scenario('Direct No-TLS',9080)
 }
 const mqtt_test = async() => {
+  await scenario('Direct TLS',8884,'pub')
+  await sleep()
+  await scenario('Direct',1883,'pub')
+  await sleep()
   await scenario('BGW TLS',8883,'pub')
   await sleep()
   await scenario('BGW w/o EI TLS',5098,'pub')
   await sleep()
   await scenario('BGW w/o EI',5051,'pub')
-  await sleep()
-  await scenario('Direct TLS',8884,'pub')
-  await sleep()
-  await scenario('Direct',1883,'pub')
 }
 
 

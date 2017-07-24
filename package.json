@@ -1,5 +1,5 @@
 {
-  "name": "test_server",
+  "name": "iot-bgw-benchmark",
   "version": "1.0.0",
   "description": "",
   "main": "bgw-bemch.js",
