@@ -19,10 +19,10 @@ sleep 6
 echo "========= Starting Node MQTT Pipe"
 node ./servers/simpleTcpPipe.js &
 sleep 6
-echo "Starting Mosquitto"
+echo "========= Starting Mosquitto"
 service mosquitto start
 sleep 3
-echo "Starting Nginx"
+echo "========= Starting Nginx"
 service nginx start
 sleep 3
 
