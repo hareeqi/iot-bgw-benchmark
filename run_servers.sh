@@ -10,11 +10,14 @@ cp ./config_templates/nginx.sites /etc/nginx/sites-enabled/default
 
 
 echo "Starting Services"
-echo "Starting Upstream Web Server"
+echo "========= Starting Upstream Web Server"
 node ./servers/simpleWebServer.js &
 sleep 6
-echo "Starting Simple Node Http Proxy"
+echo "========= Starting Simple Node Http Proxy"
 node ./servers/simpleProxyServer.js &
+sleep 6
+echo "========= Starting Node MQTT Pipe"
+node ./servers/simpleTcpPipe.js &
 sleep 6
 echo "Starting Mosquitto"
 service mosquitto start
@@ -31,4 +34,3 @@ echo "\n\nPlease start the BGW and make sure all services are working before sta
     do
         sleep 1
     done
-
