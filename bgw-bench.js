@@ -12,7 +12,7 @@ const bgw_key = "admin.test.7UQ4zTKbjv85YKxJwX6Tky1tIl7cpvGHPdsqBTwGZMz"
 const cert = "./certs/srv.pem"
 const mqttQoS = 0;
 const mqttCount = 100; // number of messages for each connecting client
-const mqttInterval = 0 // for each client number of milisecons between each message
+const mqttInterval = 1 // for each client number of milisecons between each message
 const httpTotalRequests = 10000;
 
 //End of configurable options
