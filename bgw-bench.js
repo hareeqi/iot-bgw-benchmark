@@ -108,7 +108,7 @@ const mqtt_test = async() => {
   /// NONE TLS tests
   await scenario('Direct',1883)
   await sleep()
-  await scenario('Nodejs pipe',8885)
+  await scenario('Nodejs pipe',8889)
   await sleep()
   await scenario('IoT BGW',5051)
   await sleep()

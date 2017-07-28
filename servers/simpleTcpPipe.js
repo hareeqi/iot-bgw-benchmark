@@ -33,6 +33,6 @@ if (cluster.isMaster) {
       })
       srcClient.on('error',()=>{srcClient.destroy(); dstClient && dstClient.destroy()});
       dstClient.on('error',()=>{dstClient.destroy(); srcClient && srcClient.destroy()});
-  }).listen(8885,()=>console.log(`Worker ${process.pid} started: Node MQTT Pipe:8885`));;
+  }).listen(8889,()=>console.log(`Worker ${process.pid} started: Node MQTT Pipe:8889`));;
 
 }
