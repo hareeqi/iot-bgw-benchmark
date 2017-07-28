@@ -23,13 +23,11 @@ let cons = isHTTP ?httpCons:mqttCons
 cons = process.argv[3] == "high" ?cons.high:cons.low
 const roundsString = (new Array(totalRounds)).fill(0).map((n,i)=>"Round "+(i+1)).join(',')
 const httpCommand = (con, port)=> {
-  const PORT = port == 443 ?"":`:${port}`;
-  const protocol = port==9080 ?'http':'https';
-  return `./tools/hey -n ${httpTotalRequests} -c ${con} ${protocol}://${targetHost}${PORT}/page/?bgw_key=${bgw_key}`
+  const protocol = port%2==0 ?'http':'https';
+  return `./tools/hey -n ${httpTotalRequests} -c ${con} ${protocol}://${targetHost}:${port}/page/?bgw_key=${bgw_key}`
 }
-const mqttCommand = (con, port, action)=> {
-  const is_tls = !(port==1883 || port == 5051)
-  const protocol = is_tls?'mqtts':'mqtt';
+const mqttCommand = (con, port)=> {
+  const protocol = (port%2 == 0 || port === 8883)?'mqtts':'mqtt';
   return `node ./node_modules/mqtt-bench --broker=${protocol}://${targetHost}:${port} --qos=${mqttQoS} --ca=${cert} --clients=${con} --count=${mqttCount} --username=${bgw_key} --sleep=${mqttInterval}`
 }
 const command = isHTTP? httpCommand : mqttCommand
@@ -43,7 +41,7 @@ const arr2csv = (arr)=> report += arr.map((ob,i)=>cons[i]+'con,'+ob.join(',')).j
 
 
 const sleep = ()=> new Promise(resolve => setTimeout(resolve, sleepTime*1000))
-const scenario = async (name,port,args)=> {
+const scenario = async (name,port)=> {
   report += `Running Scenario: ${name} \nCons\\Rounds,${roundsString}, ${name} (avg)\n`
   summery+=name+","
 
@@ -51,7 +49,7 @@ const scenario = async (name,port,args)=> {
   console.log(`Running Scenario "${name}"`)
   for (let j = 0 ;j<cons.length; j++){
     csv[j] = []
-    const commandString = command(cons[j],port,args)
+    const commandString = command(cons[j],port)
 
     for (let i = 0 ; i<totalRounds;i++){
       const result = parse(execSync(commandString))
@@ -85,28 +83,46 @@ const run_test = async (test_name,test_function)=>{
   console.log("\n\n\n"+report);
 }
 const http_test = async() => {
-  await scenario('IoT BGW w/o EI',5099)
-  await sleep()
-  await scenario('IoT BGW',443)
-  await sleep()
-  await scenario('Node HTTP Proxy',9083)
+  /// NONE TLS tests
+  await scenario('Direct',9080)
   await sleep()
   await scenario('Nginx Proxy',9082)
   await sleep()
-  await scenario('Direct SSL',9081)
+  await scenario('Node HTTP Proxy',9084)
   await sleep()
-  await scenario('Direct No-TLS',9080)
+  await scenario('IoT BGW',5050)
+  await sleep()
+  // TLS TESTS
+  await scenario('TLS - Direct',9081)
+  await sleep()
+  await scenario('TLS - Nginx Proxy',9083)
+  await sleep()
+  await scenario('TLS - Node HTTP Proxy',9085)
+  await sleep()
+  await scenario('TLS - IoT BGW',5099)
+  await sleep()
+  await scenario('TLS - IoT BGW W EI',443)
+
 }
 const mqtt_test = async() => {
-  await scenario('Direct TLS',8884,'pub')
+  /// NONE TLS tests
+  await scenario('Direct',1883)
   await sleep()
-  await scenario('Direct',1883,'pub')
+  await scenario('Nodejs pipe',8885)
   await sleep()
-  await scenario('BGW TLS',8883,'pub')
+  await scenario('IoT BGW',5051)
   await sleep()
-  await scenario('BGW w/o EI TLS',5098,'pub')
+  // TLS TESTS
+  await scenario('TLS - Direct',8884)
   await sleep()
-  await scenario('BGW w/o EI',5051,'pub')
+  await scenario('TLS - Nodejs pipe',8886)
+  await sleep()
+  await scenario('TLS - IoT BGW',5098)
+  await sleep()
+  await scenario('TLS - IoT BGW W EI',8883)
+
+
+
 }
 
 

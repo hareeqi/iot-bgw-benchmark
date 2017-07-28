@@ -20,8 +20,12 @@ if (cluster.isMaster) {
   cluster.on('exit', (worker, code, signal) => console.log(`worker ${worker.process.pid} died`));
 } else {
 
+  http.createServer(options, (req, res) => {
+    proxy.web(req, res, { target: 'http://testbgw.bgw.hareeqi.com:9080', agent:agent });
+  }).listen(9084,()=>console.log(`Worker ${process.pid} started: Node Proxy HTTP:9084`));;
+
   https.createServer(options, (req, res) => {
     proxy.web(req, res, { target: 'http://testbgw.bgw.hareeqi.com:9080', agent:agent });
-  }).listen(9083,()=>console.log(`Worker ${process.pid} started: Node Proxy HTTPS:9083`));;
+  }).listen(9085,()=>console.log(`Worker ${process.pid} started: Node Proxy HTTPS:9085`));;
 
 }
