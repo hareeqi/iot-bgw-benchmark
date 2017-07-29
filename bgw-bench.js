@@ -10,7 +10,7 @@ const mqttCons ={low: [50,60,70,80,90,100],high:[500,600,700,800,900,1000]} ;
 const targetHost = "testbgw.bgw.hareeqi.com";
 const bgw_key = "admin.test.7UQ4zTKbjv85YKxJwX6Tky1tIl7cpvGHPdsqBTwGZMz"
 const cert = "./certs/srv.pem"
-const mqttQoS = 0;
+const mqttQoS = process.argv[4] ||  0;
 const mqttCount = 100; // number of messages for each connecting client
 const mqttInterval = 1 // for each client number of milisecons between each message
 const httpTotalRequests = 10000;
@@ -105,13 +105,6 @@ const http_test = async() => {
 
 }
 const mqtt_test = async() => {
-  /// NONE TLS tests
-  await scenario('Direct',1883)
-  await sleep()
-  await scenario('Nodejs pipe',8889)
-  await sleep()
-  await scenario('IoT BGW',5051)
-  await sleep()
   // TLS TESTS
   await scenario('TLS - Direct',8884)
   await sleep()
@@ -120,6 +113,15 @@ const mqtt_test = async() => {
   await scenario('TLS - IoT BGW',5098)
   await sleep()
   await scenario('TLS - IoT BGW W EI',8883)
+  await sleep()
+  /// NONE TLS tests
+  await scenario('Direct',1883)
+  await sleep()
+  await scenario('Nodejs pipe',8889)
+  await sleep()
+  await scenario('IoT BGW',5051)
+  await sleep()
+
 
 
 
