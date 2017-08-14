@@ -28,14 +28,14 @@ const httpCommand = (con, port)=> {
 }
 const mqttCommand = (con, port)=> {
   const protocol = (port%2 == 0 || port === 8883)?'mqtts':'mqtt';
-  return `node ./node_modules/mqtt-bench --broker=${protocol}://${targetHost}:${port} --qos=${mqttQoS} --ca=${cert} --clients=${con} --count=${mqttCount} --username=${bgw_key} --sleep=${mqttInterval}`
+  return `./node_modules/.bin/mqtt-benchmark --broker=${protocol}://${targetHost}:${port} --qos=${mqttQoS} --ca=${cert} --clients=${con} --count=${mqttCount} --username=${bgw_key} --sleep=${mqttInterval}`
 }
 const command = isHTTP? httpCommand : mqttCommand
 
 let report = ""
 let summery= ""
 
-const  parse = (result) =>Number(((""+result).split(isHTTP?'Requests/sec:':'(messages/second): ')[1]).split('\n')[0])
+const  parse = (result) =>Number(((""+result).split(isHTTP?'Requests/sec:':'(msg/sec): ')[1]).split('\n')[0])
 const avrage = (arr)=> Math.round(arr.reduce((a,b)=>a+b)/arr.length)
 const arr2csv = (arr)=> report += arr.map((ob,i)=>cons[i]+'con,'+ob.join(',')).join('\n')
 
@@ -50,7 +50,6 @@ const scenario = async (name,port)=> {
   for (let j = 0 ;j<cons.length; j++){
     csv[j] = []
     const commandString = command(cons[j],port)
-
     for (let i = 0 ; i<totalRounds;i++){
       const result = parse(execSync(commandString))
       console.log(`Con ${cons[j]} - Round: ${i+1} - Result: ${result}`);
