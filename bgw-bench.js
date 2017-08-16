@@ -32,17 +32,14 @@ const mqttCommand = (con, port)=> {
 }
 const command = isHTTP? httpCommand : mqttCommand
 
-let report = ""
 let summery= ""
 
 const  parse = (result) =>Number(((""+result).split(isHTTP?'Requests/sec:':'(msg/sec): ')[1]).split('\n')[0])
 const avrage = (arr)=> Math.round(arr.reduce((a,b)=>a+b)/arr.length)
-const arr2csv = (arr)=> report += arr.map((ob,i)=>cons[i]+'con,'+ob.join(',')).join('\n')
 
 
 const sleep = ()=> new Promise(resolve => setTimeout(resolve, sleepTime*1000))
 const scenario = async (name,port)=> {
-  report += `Running Scenario: ${name} \nCons\\Rounds,${roundsString}, ${name} (avg)\n`
   summery+=name+","
 
   let csv = []
@@ -60,10 +57,8 @@ const scenario = async (name,port)=> {
     summery += avg+(j==(cons.length-1)?"":",")
     csv[j].push(avg)
   }
-  arr2csv(csv);
   summery += '\n'
   console.log("\n");
-  report +="\n\n"
 
 }
 
@@ -76,10 +71,9 @@ const run_test = async (test_name,test_function)=>{
   console.log(`Starting bench marking with ${sleepTime} seconds sleep time between rounds and total of ${totalRounds} rounds`);
   console.log(`With the follwoing concurnet connections ${cons.join(',')}\n\n`);
   await test_function()
-  summery = seprator+"Scenario\\Cons," +cons.join('cons,')+"cons\n"+summery+seprator
-  report = `BGW Report generated at ${Date()} \n\n` + summery +report
-
-  console.log("\n\n\n"+report);
+  summery = seprator+"Scenario\\CC," +cons.join(' CC,')+"cons\n"+summery+seprator
+  summery = `\n\n\nBGW Report generated at ${Date()} \n\n` + summery
+  console.log(summery);
 }
 const http_test = async() => {
   /// NONE TLS tests
